@@ -16,8 +16,9 @@ middle, and it never writes to or refreshes your credentials (see
 
 ## Install (teammates — no build required)
 
-1. Download the latest `claude-usage-widget-<version>.zip` and unzip it
-   anywhere (e.g. `C:\Tools\ClaudeUsageWidget\`).
+1. Download the latest `claude-usage-widget-<version>.zip` from
+   [Releases](https://github.com/bharath6692/claude-usage-widget/releases/latest)
+   and unzip it anywhere (e.g. `C:\Tools\ClaudeUsageWidget\`).
 2. Run `claude-usage-widget.exe`.
 3. **Windows will likely show a SmartScreen warning** ("Windows protected your
    PC") because the exe isn't code-signed. This is expected for an internal
@@ -67,7 +68,7 @@ a toolchain quirk (see `docs/DESIGN.md` "Toolchain notes") that a bare
 ```powershell
 .\scripts\cargo.ps1 build            # debug
 .\scripts\cargo.ps1 build --release  # release (this is what gets shipped)
-.\scripts\cargo.ps1 test             # 104 tests, all headless — no window needed
+.\scripts\cargo.ps1 test             # 105 tests, all headless — no window needed
 ```
 
 To produce a distributable zip + update manifest in one step:
@@ -79,12 +80,22 @@ To produce a distributable zip + update manifest in one step:
 ```
 
 This writes `dist/claude-usage-widget-<version>.zip` and `dist/version.json`.
-After uploading the zip somewhere reachable (a Teams/OneDrive link, an
-internal file share), fill in `download_url` in `version.json`, host that
-file too, and point each teammate's `settings.json`
-(`update_manifest_url`) at its URL — "Check for updates..." in the menu will
-then compare versions and tell them when a newer build is available. This is
-notify-only: it never downloads or installs anything automatically.
+To publish, fill in `download_url` in `version.json` and attach both files
+to a GitHub release:
+
+```powershell
+gh release create v<version> dist/claude-usage-widget-<version>.zip dist/version.json --notes "..."
+```
+
+"Check for updates..." in the menu compares versions against the manifest
+configured as `update_manifest_url` in `settings.json`. To follow GitHub
+releases, set it to:
+
+```
+https://github.com/bharath6692/claude-usage-widget/releases/latest/download/version.json
+```
+
+This is notify-only: it never downloads or installs anything automatically.
 
 ## Known limitations (v1)
 

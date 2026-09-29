@@ -172,10 +172,13 @@ real install directory; a bare copy fails to even load
 status 53" — `0xC0000135 & 0xFF == 53`). The actual fix is
 `scripts/dlltool-wrapper.bat`, a tiny shim that forwards every argument to
 the real `dlltool.exe` plus `-S <as.exe>` pointed at the assembler's real,
-untouched install location. `.cargo/config.toml` points rustc at the wrapper
-via `-C dlltool=<absolute path>` — it must be absolute, since rustc invokes
-this once per crate from that crate's own source directory (including
-dependencies under `~/.cargo/registry`), not from the workspace root.
+untouched install location (`scripts/cargo.ps1` finds it and passes it in
+`CLAUDE_WIDGET_AS`). `scripts/cargo.ps1` points rustc at the wrapper via
+`--config` with `-C dlltool=<absolute path>` — it must be absolute, since
+rustc invokes this once per crate from that crate's own source directory
+(including dependencies under `~/.cargo/registry`), not from the workspace
+root. It's computed at build time rather than committed to
+`.cargo/config.toml` so the repo builds from any clone location.
 
 Both issues silently *don't* reproduce against a `target/` directory that
 already has cached build artifacts from a build done under different

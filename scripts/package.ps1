@@ -74,7 +74,8 @@ $manifest = [ordered]@{
     download_url = $null  # fill in once the zip is uploaded somewhere; teammates' settings.json points here
 }
 $manifestPath = "$distDir\version.json"
-$manifest | ConvertTo-Json | Set-Content -Path $manifestPath -Encoding utf8
+# BOM-less UTF-8: Windows PowerShell 5.1's `-Encoding utf8` prepends a BOM.
+[System.IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json), (New-Object System.Text.UTF8Encoding $false))
 Write-Output "Wrote $manifestPath"
 
 Write-Output "`nDone. Next: upload dist/ (or at least the zip) somewhere teammates can reach, fill in"

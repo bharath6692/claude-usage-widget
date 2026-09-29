@@ -58,7 +58,7 @@ pub fn check(manifest_url: Option<&str>, current_version: &str) -> UpdateCheckOu
         Err(e) => return UpdateCheckOutcome::Failed(e.to_string()),
     };
 
-    let manifest: RawManifest = match serde_json::from_str(&body) {
+    let manifest = match parse_manifest(&body) {
         Ok(m) => m,
         Err(e) => return UpdateCheckOutcome::Failed(format!("bad manifest: {e}")),
     };
@@ -93,6 +93,12 @@ fn build_agent() -> ureq::Agent {
         )
         .build();
     config.into()
+}
+
+/// Tolerates a leading UTF-8 BOM, which Windows PowerShell 5.1 writes for
+/// `-Encoding utf8` and serde_json otherwise rejects.
+fn parse_manifest(body: &str) -> serde_json::Result<RawManifest> {
+    serde_json::from_str(body.trim_start_matches('\u{feff}'))
 }
 
 /// Parse the leading `X.Y.Z` from a version string, ignoring any
@@ -160,5 +166,11 @@ mod tests {
     fn malformed_remote_version_fails_closed() {
         // A broken manifest must never claim an update is available.
         assert!(!is_newer("garbage", "0.1.0"));
+    }
+
+    #[test]
+    fn manifest_with_utf8_bom_parses() {
+        let m = parse_manifest("\u{feff}{\"version\": \"0.2.0\"}").unwrap();
+        assert_eq!(m.version.as_deref(), Some("0.2.0"));
     }
 }

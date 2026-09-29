@@ -30,5 +30,14 @@ if (-not $mingw) {
 
 $env:Path = "$cargoBin;$selfContained;$mingw;$env:Path"
 
-& "$cargoBin\cargo.exe" @args
+# rustup's bundled dlltool can't locate as.exe on its own, so rustc is pointed
+# at scripts/dlltool-wrapper.bat, which passes `-S $env:CLAUDE_WIDGET_AS`.
+# rustc runs dlltool from each dependency's own source directory, so the
+# wrapper path must be absolute - computed here so the repo builds from any
+# clone location. Forward slashes keep the TOML string free of escapes.
+$env:CLAUDE_WIDGET_AS = Join-Path $mingw 'as.exe'
+$wrapper = (Join-Path $PSScriptRoot 'dlltool-wrapper.bat') -replace '\\', '/'
+$dlltoolConfig = "target.x86_64-pc-windows-gnu.rustflags=['-C', 'dlltool=$wrapper']"
+
+& "$cargoBin\cargo.exe" --config $dlltoolConfig @args
 exit $LASTEXITCODE

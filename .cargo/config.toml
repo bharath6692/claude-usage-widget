@@ -5,15 +5,11 @@
 # tells rustc to use those instead of searching the external mingw install.
 # (The granular `+mingw` form is nightly-only; `yes` is the stable equivalent.)
 #
-# rustup's bundled dlltool.exe also can't locate an assembler on its own in
-# this environment (see scripts/dlltool-wrapper.bat for the full story) —
-# route dlltool invocations through a wrapper that passes `-S <as.exe>`
-# explicitly, pointed at the real WinLibs install location (never a copy).
-# Must be an absolute path: rustc invokes this from dependency crates' own
-# source directories, not the workspace root, so a relative path would only
-# resolve for this crate's own build script and fail for every dependency.
+# The companion `-C dlltool=<wrapper>` flag is NOT set here: it must be an
+# absolute path, which depends on where the repo is cloned. scripts/cargo.ps1
+# computes it at build time and adds it via `--config` (cargo merges the two
+# rustflags lists).
 [target.x86_64-pc-windows-gnu]
 rustflags = [
     "-C", "link-self-contained=yes",
-    "-C", "dlltool=C:/Users/sturaka/projects/claude-usage-widget/scripts/dlltool-wrapper.bat",
 ]
